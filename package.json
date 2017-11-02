@@ -1,0 +1,26 @@
+{
+  "name": "shiz",
+  "version": "1.0.0",
+  "description": "Lazily-calculated observables made from functions",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TehShrike/shiz.git"
+  },
+  "keywords": [
+    "function",
+    "functional",
+    "observable",
+    "state",
+    "pure"
+  ],
+  "author": "TehShrike",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/TehShrike/shiz/issues"
+  },
+  "homepage": "https://github.com/TehShrike/shiz#readme"
+}
