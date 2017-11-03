@@ -22,39 +22,42 @@ module.exports = function shiz(originalInput) {
 	const setDirty = () => {
 		if (!dirty) {
 			dirty = true
-			console.log(`functions that rely on ${emittingFunction.label} directly:`, getFunctionsThatRelyOnMe(emittingFunction).map(({ label }) => label))
-			getFunctionsThatRelyOnMe(emittingFunction).forEach(({ setDirty }) => setDirty())
-			nextTick(() => emittingFunction.emit('change'))
+			console.log(`functions that rely on ${mainFunction.label} directly:`, getFunctionsThatRelyOnMe(mainFunction).map(({ label }) => label))
+			getFunctionsThatRelyOnMe(mainFunction).forEach(({ setDirty }) => setDirty())
+			nextTick(() => emitter.emit('change'))
 		}
 	}
 
-	const emittingFunction = makeEmitter(newInput => {
+	const emitter = makeEmitter()
+
+	const mainFunction = newInput => {
 		if (newInput === undefined) {
 			return wrappedFunction()
 		} else {
 			changeValue(newInput)
-			console.log(`changed value of ${emittingFunction.label} to`, newInput)
+			console.log(`changed value of ${mainFunction.label} to`, newInput)
 			setDirty()
 		}
-	})
+	}
 
 	const wrappedFunction = watchFunction(() => {
 		if (dirty) {
 			calculatedValue = valueFn()
-			console.log(`${emittingFunction.label} recalculated its value, it is now`, calculatedValue)
+			console.log(`${mainFunction.label} recalculated its value, it is now`, calculatedValue)
 			dirty = false
 		} else {
-			console.log(`${emittingFunction.label} returning previously calculated value`, calculatedValue)
+			console.log(`${mainFunction.label} returning previously calculated value`, calculatedValue)
 		}
 
 		return calculatedValue
-	}, emittingFunction)
+	}, mainFunction)
 
-	emittingFunction.setDirty = setDirty
+	mainFunction.setDirty = setDirty
+	mainFunction.onChange = cb => emitter.on('change', cb)
 
-	emittingFunction()
+	mainFunction()
 
-	return emittingFunction
+	return mainFunction
 }
 
 

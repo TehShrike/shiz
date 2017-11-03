@@ -76,7 +76,7 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 
 	c.label = 'c'
 
-	c.on('change', () => {
+	c.onChange(() => {
 		t.notOk(firstTick)
 
 		t.equal(c(), 3)
