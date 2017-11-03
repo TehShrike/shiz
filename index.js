@@ -14,16 +14,17 @@ module.exports = function shiz(originalInput = null) {
 	let valueFn = makeFunction(originalInput)
 	let dirty = true
 	let calculatedValue
+	const representativeObject = { setDirty }
 
 	const changeValue = newInput => {
 		valueFn = makeFunction(newInput)
 	}
 
-	const setDirty = () => {
+	function setDirty() {
 		if (!dirty) {
 			dirty = true
-			console.log(`functions that rely on ${mainFunction.label} directly:`, getFunctionsThatRelyOnMe(mainFunction).map(({ label }) => label))
-			getFunctionsThatRelyOnMe(mainFunction).forEach(({ setDirty }) => setDirty())
+			console.log(`functions that rely on ${mainFunction.label} directly:`, getFunctionsThatRelyOnMe(representativeObject).map(({ label }) => label))
+			getFunctionsThatRelyOnMe(representativeObject).forEach(({ setDirty }) => setDirty())
 			nextTick(() => emitter.emit('change'))
 		}
 	}
@@ -36,9 +37,7 @@ module.exports = function shiz(originalInput = null) {
 		setDirty()
 	}
 
-	const mainFunction = () => wrappedFunction()
-
-	const wrappedFunction = watchFunction(() => {
+	const mainFunction = watchFunction(() => {
 		if (dirty) {
 			calculatedValue = valueFn()
 			console.log(`${mainFunction.label} recalculated its value, it is now`, calculatedValue)
@@ -48,7 +47,7 @@ module.exports = function shiz(originalInput = null) {
 		}
 
 		return calculatedValue
-	}, mainFunction)
+	}, representativeObject)
 
 	mainFunction.setDirty = setDirty
 	mainFunction.onChange = cb => emitter.on('change', cb)
@@ -71,7 +70,7 @@ function watchFunction(fn, representativeObject) {
 
 		if (activeObjects.length > 0) {
 			const dependsOnMeDirectly = activeObjects[activeObjects.length - 1]
-			console.log(`${dependsOnMeDirectly.label} depends on ${representativeObject.label} directly`)
+			// console.log(`${dependsOnMeDirectly.label} depends on ${representativeObject.label} directly`)
 			functionsToTheFunctionsThatRelyOnThem.get(representativeObject).add(dependsOnMeDirectly)
 		}
 
