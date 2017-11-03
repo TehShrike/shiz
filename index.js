@@ -39,28 +39,32 @@ module.exports = function shiz(originalInput = null) {
 		changeValue(newInput)
 		// console.log(`changed value of ${representativeObject.label} to`, newInput)
 		setDirty()
+		recalculateValue()
 	}
 
-	const recalculateValue = watchFunction(() => valueFn(), representativeObject)
+	const runValueFunction = watchFunction(() => valueFn(), representativeObject)
 
-	function mainFunction() {
+	function recalculateValue() {
+		calculatedValue = runValueFunction()
+		// console.log(`${representativeObject.label} recalculated its value, it is now`, calculatedValue)
+		dirty = false
+	}
+
+	function getValue() {
 		if (dirty) {
-			calculatedValue = recalculateValue()
-			// console.log(`${representativeObject.label} recalculated its value, it is now`, calculatedValue)
-			dirty = false
+			recalculateValue()
 		} else {
-			recalculateValue.signalThatFunctionWasRunWithoutRecalculating()
+			runValueFunction.signalThatFunctionWasRunWithoutRecalculating()
 			// console.log(`${representativeObject.label} returning previously calculated value`, calculatedValue)
 		}
 
 		return calculatedValue
 	}
 
-	mainFunction.setDirty = setDirty
-	mainFunction.onChange = cb => emitter.on('change', cb)
-	mainFunction.set = set
+	getValue.onChange = cb => emitter.on('change', cb)
+	getValue.set = set
 
-	mainFunction()
+	getValue()
 
-	return mainFunction
+	return getValue
 }

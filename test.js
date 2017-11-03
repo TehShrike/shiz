@@ -29,15 +29,15 @@ test(`Some basic case`, t => {
 test(`Doesn't calculate values more than once`, t => {
 	const a = shiz(3)
 	const b = shiz(5)
-	const counter = countTimesCalled(() => a() + b())
-	const c = shiz(counter)
+	const cCounter = countTimesCalled(() => a() + b())
+	const c = shiz(cCounter)
 	const d = shiz(() => c())
 	const e = shiz(() => c() + 1)
 
 	t.equal(d(), 8)
 	t.equal(e(), 9)
 
-	t.equal(counter.get(), 1)
+	t.equal(cCounter.get(), 1)
 
 	a.set(4)
 	b.set(6)
@@ -45,7 +45,7 @@ test(`Doesn't calculate values more than once`, t => {
 	t.equal(d(), 10)
 	t.equal(e(), 11)
 
-	t.equal(counter.get(), 2)
+	t.equal(cCounter.get(), 2)
 
 	t.end()
 })
@@ -118,5 +118,13 @@ test(`Dependencies get updated every time a function is run`, t => {
 
 	t.equal(cCount.get(), 2, `Setting a shouldn't cause c to become dirty, because the last time c was ran, it didn't depend on a`)
 
+	t.end()
+})
+
+test(`Values are evaluated immediately when set`, t => {
+	const a = shiz(3)
+	const counter = countTimesCalled(() => 4)
+	a.set(counter)
+	t.equal(counter.get(), 1)
 	t.end()
 })
