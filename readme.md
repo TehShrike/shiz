@@ -73,3 +73,4 @@ The callback function will be called on the next tick after a change occurs.
 - consider making the package smaller by introducing a small amount of complexity to remove dependencies
 	- key-master
 	- better-emitter
+- could be more efficient to not completely re-detect all dependencies on every run - shouldn't hurt to just add anything new to the set and leave old dependencies still flagged as dependencies.  (No more instantiating `Set`s on every run)
