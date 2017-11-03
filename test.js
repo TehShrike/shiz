@@ -26,7 +26,7 @@ test(`Some basic case`, t => {
 	// e.label = 'e'
 
 	t.equal(e(), 5)
-	a(2)
+	a.set(2)
 	t.equal(e(), 7)
 
 	t.end()
@@ -51,8 +51,8 @@ test(`Doesn't calculate values more than once`, t => {
 
 	t.equal(counter.get(), 1)
 
-	a(4)
-	b(6)
+	a.set(4)
+	b.set(6)
 
 	t.equal(d(), 10)
 	t.equal(e(), 11)
@@ -87,8 +87,8 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 
 	t.equal(counter.get(), 1)
 
-	a(1)
-	b(2)
+	a.set(1)
+	b.set(2)
 
 	firstTick = false
 })

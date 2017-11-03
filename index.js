@@ -30,15 +30,13 @@ module.exports = function shiz(originalInput) {
 
 	const emitter = makeEmitter()
 
-	const mainFunction = newInput => {
-		if (newInput === undefined) {
-			return wrappedFunction()
-		} else {
-			changeValue(newInput)
-			console.log(`changed value of ${mainFunction.label} to`, newInput)
-			setDirty()
-		}
+	function set(newInput) {
+		changeValue(newInput)
+		console.log(`changed value of ${mainFunction.label} to`, newInput)
+		setDirty()
 	}
+
+	const mainFunction = () => wrappedFunction()
 
 	const wrappedFunction = watchFunction(() => {
 		if (dirty) {
@@ -54,6 +52,7 @@ module.exports = function shiz(originalInput) {
 
 	mainFunction.setDirty = setDirty
 	mainFunction.onChange = cb => emitter.on('change', cb)
+	mainFunction.set = set
 
 	mainFunction()
 
