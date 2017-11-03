@@ -32,7 +32,6 @@ function watchFunction(fn, representativeObject) {
 		if (activeChildSets.length > 0) {
 			const parentsChildren = activeChildSets[activeChildSets.length - 1]
 			parentsChildren.add(representativeObject)
-			// console.log(`${parentsChildren.label} depends on ${representativeObject.label} directly`)
 		}
 	}
 
@@ -40,8 +39,8 @@ function watchFunction(fn, representativeObject) {
 		signalThatFunctionWasRunWithoutRecalculating()
 
 		const children = new Set()
+
 		activeChildSets.push(children)
-		// console.log(`About to actually execute ${representativeObject.label}`)
 		const returnValue = fn(...args)
 		activeChildSets.pop()
 

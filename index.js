@@ -11,15 +11,13 @@ module.exports = function shiz(originalInput = null) {
 	let dirty = true
 	let calculatedValue
 	const representativeObject = { setDirty }
+	const emitter = makeEmitter()
 
-	const changeValue = newInput => {
-		valueFn = makeFunction(newInput)
-	}
+	const calculateValueFunction = watchFunction(() => valueFn(), representativeObject)
 
 	function setDirty() {
 		if (!dirty) {
 			dirty = true
-			// console.log(`functions that rely on ${representativeObject.label} directly:`, getFunctionsThatRelyOn(representativeObject).map(({ label }) => label))
 			getFunctionsThatRelyOn(representativeObject).forEach(({ setDirty }) => setDirty())
 
 			if (needToEmitChange) {
@@ -29,24 +27,8 @@ module.exports = function shiz(originalInput = null) {
 		}
 	}
 
-	const emitter = makeEmitter()
-
-	emitter.on('change', () => {
-		needToEmitChange = true
-	})
-
-	function set(newInput) {
-		changeValue(newInput)
-		// console.log(`changed value of ${representativeObject.label} to`, newInput)
-		setDirty()
-		recalculateValue()
-	}
-
-	const runValueFunction = watchFunction(() => valueFn(), representativeObject)
-
 	function recalculateValue() {
-		calculatedValue = runValueFunction()
-		// console.log(`${representativeObject.label} recalculated its value, it is now`, calculatedValue)
+		calculatedValue = calculateValueFunction()
 		dirty = false
 	}
 
@@ -54,15 +36,22 @@ module.exports = function shiz(originalInput = null) {
 		if (dirty) {
 			recalculateValue()
 		} else {
-			runValueFunction.signalThatFunctionWasRunWithoutRecalculating()
-			// console.log(`${representativeObject.label} returning previously calculated value`, calculatedValue)
+			calculateValueFunction.signalThatFunctionWasRunWithoutRecalculating()
 		}
 
 		return calculatedValue
 	}
 
+	emitter.on('change', () => {
+		needToEmitChange = true
+	})
+
 	getValue.onChange = cb => emitter.on('change', cb)
-	getValue.set = set
+	getValue.set = newInput => {
+		valueFn = makeFunction(newInput)
+		setDirty()
+		recalculateValue()
+	}
 
 	getValue()
 
