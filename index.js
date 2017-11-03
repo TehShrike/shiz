@@ -7,6 +7,7 @@ const makeFunction = value => typeof value === 'function' ? value : () => value
 
 module.exports = function shiz(originalInput = null) {
 	let valueFn = makeFunction(originalInput)
+	let needToEmitChange = true
 	let dirty = true
 	let calculatedValue
 	const representativeObject = { setDirty }
@@ -20,11 +21,19 @@ module.exports = function shiz(originalInput = null) {
 			dirty = true
 			console.log(`functions that rely on ${mainFunction.label} directly:`, getFunctionsThatRelyOn(representativeObject).map(({ label }) => label))
 			getFunctionsThatRelyOn(representativeObject).forEach(({ setDirty }) => setDirty())
-			nextTick(() => emitter.emit('change'))
+
+			if (needToEmitChange) {
+				nextTick(() => emitter.emit('change'))
+				needToEmitChange = false
+			}
 		}
 	}
 
 	const emitter = makeEmitter()
+
+	emitter.on('change', () => {
+		needToEmitChange = true
+	})
 
 	function set(newInput) {
 		changeValue(newInput)
@@ -52,5 +61,3 @@ module.exports = function shiz(originalInput = null) {
 
 	return mainFunction
 }
-
-

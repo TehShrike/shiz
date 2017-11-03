@@ -100,3 +100,17 @@ test(`Values initialize to null`, t => {
 
 	t.end()
 })
+
+test(`Shouldn't emit more than one change event when there are multiple updates in a tick`, t => {
+	const a = shiz('yeah')
+
+	t.plan(1)
+
+	a.onChange(() => {
+		t.pass(`Callback called`)
+	})
+
+	a.set(1)
+	a()
+	a.set(2)
+})
