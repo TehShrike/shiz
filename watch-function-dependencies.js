@@ -16,6 +16,13 @@ function removeAsParentFromAllChildren(o) {
 	parentsToChildren.delete(o)
 }
 
+function setChildren(parent, children) {
+	toArray(children).forEach(child => {
+		childrenToParents.get(child).add(parent)
+	})
+	parentsToChildren.set(parent, children)
+}
+
 function watchFunction(fn, representativeObject) {
 	if (!representativeObject) {
 		throw new Error(`Must setRepresentativeObject`)
@@ -29,7 +36,7 @@ function watchFunction(fn, representativeObject) {
 		}
 	}
 
-	const execute = (...args) => {
+	function execute(...args) {
 		signalThatFunctionWasRunWithoutRecalculating()
 
 		const children = new Set()
@@ -39,11 +46,7 @@ function watchFunction(fn, representativeObject) {
 		activeChildSets.pop()
 
 		removeAsParentFromAllChildren(representativeObject)
-		toArray(children).forEach(child => {
-			childrenToParents.get(child).add(representativeObject)
-		})
-		parentsToChildren.set(representativeObject, children)
-
+		setChildren(representativeObject, children)
 
 		return returnValue
 	}
