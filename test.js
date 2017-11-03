@@ -19,12 +19,6 @@ test(`Some basic case`, t => {
 	const d = shiz(() => a() * b())
 	const e = shiz(() => d() + c())
 
-	// a.label = 'a'
-	// b.label = 'b'
-	// c.label = 'c'
-	// d.label = 'd'
-	// e.label = 'e'
-
 	t.equal(e(), 5)
 	a.set(2)
 	t.equal(e(), 7)
@@ -39,12 +33,6 @@ test(`Doesn't calculate values more than once`, t => {
 	const c = shiz(counter)
 	const d = shiz(() => c())
 	const e = shiz(() => c() + 1)
-
-	a.label = 'a'
-	b.label = 'b'
-	c.label = 'c'
-	d.label = 'd'
-	e.label = 'e'
 
 	t.equal(d(), 8)
 	t.equal(e(), 9)
@@ -68,13 +56,8 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 	const a = shiz(3)
 	const b = shiz(5)
 
-	a.label = 'a'
-	b.label = 'b'
-
 	const counter = countTimesCalled(() => a() + b())
 	const c = shiz(counter)
-
-	c.label = 'c'
 
 	c.onChange(() => {
 		t.notOk(firstTick)
@@ -113,4 +96,27 @@ test(`Shouldn't emit more than one change event when there are multiple updates 
 	a.set(1)
 	a()
 	a.set(2)
+})
+
+test(`Dependencies get updated every time a function is run`, t => {
+	const firstRun = shiz(true)
+	const a = shiz('yarp')
+	const b = shiz('hurr')
+
+	const cCount = countTimesCalled(() => firstRun() ? a() : b())
+	const c = shiz(cCount)
+
+	c()
+	firstRun.set(false)
+	c()
+
+	t.equal(cCount.get(), 2)
+
+	a.set('yarp2')
+
+	c()
+
+	t.equal(cCount.get(), 2, `Setting a shouldn't cause c to become dirty, because the last time c was ran, it didn't depend on a`)
+
+	t.end()
 })

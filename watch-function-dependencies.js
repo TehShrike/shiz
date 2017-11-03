@@ -1,28 +1,56 @@
 const keyMaster = require('key-master')
 
-const objectsToDependents = keyMaster(() => new Set(), new Map())
-const getFunctionsThatRelyOn = me => [ ...objectsToDependents.get(me) ]
+const childrenToParents = keyMaster(() => new Set(), new WeakMap())
+const parentsToChildren = keyMaster(() => new Set(), new WeakMap())
+const toArray = iterator => [ ...iterator ]
+const getFunctionsThatRelyOn = o => toArray(childrenToParents.get(o))
 
-const activeObjects = []
+const activeChildSets = []
+
+function removeAsParentFromAllChildren(o) {
+	const children = parentsToChildren.get(o)
+
+	toArray(children).forEach(child => {
+		childrenToParents.get(child).delete(o)
+	})
+	parentsToChildren.delete(o)
+}
 
 function watchFunction(fn, representativeObject) {
-	return (...args) => {
-		if (!representativeObject) {
-			throw new Error(`Must setRepresentativeObject`)
-		}
+	if (!representativeObject) {
+		throw new Error(`Must setRepresentativeObject`)
+	}
 
-		if (activeObjects.length > 0) {
-			const dependsOnThisFunctionDirectly = activeObjects[activeObjects.length - 1]
-			// console.log(`${dependsOnThisFunctionDirectly.label} depends on ${representativeObject.label} directly`)
-			objectsToDependents.get(representativeObject).add(dependsOnThisFunctionDirectly)
+	function signalThatFunctionWasRunWithoutRecalculating() {
+		if (activeChildSets.length > 0) {
+			const parentsChildren = activeChildSets[activeChildSets.length - 1]
+			parentsChildren.add(representativeObject)
+			// console.log(`${parentsChildren.label} depends on ${representativeObject.label} directly`)
 		}
+	}
 
-		activeObjects.push(representativeObject)
+	const execute = (...args) => {
+		signalThatFunctionWasRunWithoutRecalculating()
+
+		const children = new Set()
+		activeChildSets.push(children)
+		// console.log(`About to actually execute ${representativeObject.label}`)
 		const returnValue = fn(...args)
-		activeObjects.pop()
+		activeChildSets.pop()
+
+		removeAsParentFromAllChildren(representativeObject)
+		toArray(children).forEach(child => {
+			childrenToParents.get(child).add(representativeObject)
+		})
+		parentsToChildren.set(representativeObject, children)
+
 
 		return returnValue
 	}
+
+	execute.signalThatFunctionWasRunWithoutRecalculating = signalThatFunctionWasRunWithoutRecalculating
+
+	return execute
 }
 
 module.exports = {

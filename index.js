@@ -19,7 +19,7 @@ module.exports = function shiz(originalInput = null) {
 	function setDirty() {
 		if (!dirty) {
 			dirty = true
-			console.log(`functions that rely on ${mainFunction.label} directly:`, getFunctionsThatRelyOn(representativeObject).map(({ label }) => label))
+			// console.log(`functions that rely on ${representativeObject.label} directly:`, getFunctionsThatRelyOn(representativeObject).map(({ label }) => label))
 			getFunctionsThatRelyOn(representativeObject).forEach(({ setDirty }) => setDirty())
 
 			if (needToEmitChange) {
@@ -37,21 +37,24 @@ module.exports = function shiz(originalInput = null) {
 
 	function set(newInput) {
 		changeValue(newInput)
-		console.log(`changed value of ${mainFunction.label} to`, newInput)
+		// console.log(`changed value of ${representativeObject.label} to`, newInput)
 		setDirty()
 	}
 
-	const mainFunction = watchFunction(() => {
+	const recalculateValue = watchFunction(() => valueFn(), representativeObject)
+
+	function mainFunction() {
 		if (dirty) {
-			calculatedValue = valueFn()
-			console.log(`${mainFunction.label} recalculated its value, it is now`, calculatedValue)
+			calculatedValue = recalculateValue()
+			// console.log(`${representativeObject.label} recalculated its value, it is now`, calculatedValue)
 			dirty = false
 		} else {
-			console.log(`${mainFunction.label} returning previously calculated value`, calculatedValue)
+			recalculateValue.signalThatFunctionWasRunWithoutRecalculating()
+			// console.log(`${representativeObject.label} returning previously calculated value`, calculatedValue)
 		}
 
 		return calculatedValue
-	}, representativeObject)
+	}
 
 	mainFunction.setDirty = setDirty
 	mainFunction.onChange = cb => emitter.on('change', cb)
