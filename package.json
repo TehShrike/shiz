@@ -4,7 +4,7 @@
   "description": "Lazily-calculated observables made from functions",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js"
+    "test": "tape test.js && jsmd readme.md"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,10 @@
   "dependencies": {
     "better-emitter": "1.0.2",
     "iso-next-tick": "1.0.0",
-    "key-master": "3.1.0",
+    "key-master": "3.1.0"
+  },
+  "devDependencies": {
+    "jsmd": "0.3.1",
     "tape": "4.8.0"
   }
 }
