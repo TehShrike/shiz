@@ -22,5 +22,11 @@
   "bugs": {
     "url": "https://github.com/TehShrike/shiz/issues"
   },
-  "homepage": "https://github.com/TehShrike/shiz#readme"
+  "homepage": "https://github.com/TehShrike/shiz#readme",
+  "dependencies": {
+    "better-emitter": "1.0.2",
+    "iso-next-tick": "1.0.0",
+    "key-master": "3.1.0",
+    "tape": "4.8.0"
+  }
 }
