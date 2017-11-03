@@ -10,7 +10,7 @@ const functionsToTheFunctionsThatRelyOnThem = keyMaster(() => new Set(), new Map
 const getFunctionsThatRelyOnMe = me => [ ...functionsToTheFunctionsThatRelyOnThem.get(me) ]
 
 
-module.exports = function shiz(originalInput) {
+module.exports = function shiz(originalInput = null) {
 	let valueFn = makeFunction(originalInput)
 	let dirty = true
 	let calculatedValue

@@ -92,3 +92,11 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 
 	firstTick = false
 })
+
+test(`Values initialize to null`, t => {
+	const a = shiz()
+
+	t.equal(a(), null)
+
+	t.end()
+})
