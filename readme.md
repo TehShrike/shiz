@@ -59,11 +59,11 @@ Exports two functions, `value` and `computed`.
 
 ### `observableish = value([ value ])`
 
-Takes any value and returns an `observableish` object with a `set` function that takes a single argument.  Call `set` to change the value.
+Takes any value and returns an [`observableish`](#observableish) object with a `set` function that takes a single argument.  Call `set` to change the value.
 
 ### `observableish = computed(dependencies, computeFunction)`
 
-Takes two arguments: an array of `observableish` dependencies, and a function that takes an array of values calculated from those dependencies.
+Takes two arguments: an array of [`observableish`](#observableish) dependencies, and a function that takes an array of values calculated from those dependencies.
 
 Even if a bunch of upstream dependencies change, the `computeFunction` won't be called until something calls the `get` method.
 
@@ -80,8 +80,8 @@ const doubled = computed([ a ], computeFunction)
 
 An object with these properties:
 
-- `get()`: a function that returns the current value, recalculating it if necessary
-- `map(fn)`: sugar for `computed([ observableish ], ([ value ]) => fn(value))`
+- `observableish.get()`: a function that returns the current value, recalculating it if necessary
+- `observableish.map(fn)`: sugar for `computed([ observableish ], ([ value ]) => fn(value))`
 
 It is also a [`better-emitter`](https://github.com/TehShrike/better-emitter) emitter that emits these events:
 
