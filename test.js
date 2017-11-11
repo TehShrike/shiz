@@ -1,5 +1,5 @@
 const test = require('tape')
-const shiz = require('./')
+const { value, computed } = require('./')
 
 const countTimesCalled = fn => {
 	let count = 0
@@ -13,37 +13,37 @@ const countTimesCalled = fn => {
 }
 
 test(`Some basic case`, t => {
-	const a = shiz(1)
-	const b = shiz(2)
-	const c = shiz(() => 3)
-	const d = shiz(() => a() * b())
-	const e = shiz(() => d() + c())
+	const a = value(1)
+	const b = value(2)
+	const c = value(3)
+	const d = computed([ a, b ], ([ a, b ]) => a * b)
+	const e = computed([ d, c ], ([ d, c ]) => d + c)
 
-	t.equal(e(), 5)
+	t.equal(e.get(), 5)
 	a.set(2)
-	t.equal(e(), 7)
+	t.equal(e.get(), 7)
 
 	t.end()
 })
 
 test(`Doesn't calculate values more than once`, t => {
-	const a = shiz(3)
-	const b = shiz(5)
-	const cCounter = countTimesCalled(() => a() + b())
-	const c = shiz(cCounter)
-	const d = shiz(() => c())
-	const e = shiz(() => c() + 1)
+	const a = value(3)
+	const b = value(5)
+	const cCounter = countTimesCalled(([ a, b ]) => a + b)
+	const c = computed([ a, b ], cCounter)
+	const d = computed([ c ], ([ c ]) => c)
+	const e = computed([ c ], ([ c ]) => c + 1)
 
-	t.equal(d(), 8)
-	t.equal(e(), 9)
+	t.equal(d.get(), 8)
+	t.equal(e.get(), 9)
 
 	t.equal(cCounter.get(), 1)
 
 	a.set(4)
 	b.set(6)
 
-	t.equal(d(), 10)
-	t.equal(e(), 11)
+	t.equal(d.get(), 10)
+	t.equal(e.get(), 11)
 
 	t.equal(cCounter.get(), 2)
 
@@ -53,16 +53,16 @@ test(`Doesn't calculate values more than once`, t => {
 test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 	let firstTick = true
 
-	const a = shiz(3)
-	const b = shiz(5)
+	const a = value(3)
+	const b = value(5)
 
-	const counter = countTimesCalled(() => a() + b())
-	const c = shiz(counter)
+	const counter = countTimesCalled(([ a, b ]) => a + b)
+	const c = computed([ a, b ], counter)
 
-	c.onChange(() => {
+	c.on('change', () => {
 		t.notOk(firstTick)
 
-		t.equal(c(), 3)
+		t.equal(c.get(), 3)
 		t.equal(counter.get(), 2)
 
 		t.end()
@@ -77,54 +77,36 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 })
 
 test(`Values initialize to null`, t => {
-	const a = shiz()
+	const a = value()
 
-	t.equal(a(), null)
+	t.equal(a.get(), null)
 
 	t.end()
 })
 
 test(`Shouldn't emit more than one change event when there are multiple updates in a tick`, t => {
-	const a = shiz('yeah')
+	const a = value('yeah')
 
 	t.plan(1)
 
-	a.onChange(() => {
+	a.on('change', () => {
 		t.pass(`Callback called`)
 	})
 
 	a.set(1)
-	a()
+	a.get()
 	a.set(2)
 })
 
-test(`Dependencies get updated every time a function is run`, t => {
-	const firstRun = shiz(true)
-	const a = shiz('yarp')
-	const b = shiz('hurr')
+test(`map`, t => {
+	const initial = value(7)
+	const calculated = computed([ initial ], ([ initial ]) => initial + 3)
 
-	const cCount = countTimesCalled(() => firstRun() ? a() : b())
-	const c = shiz(cCount)
+	const initialMap = initial.map(initial => initial * 2)
+	const calculatedMap = calculated.map(calculated => calculated - 5)
 
-	c()
-	firstRun.set(false)
-	c()
+	t.equal(initialMap.get(), 14)
+	t.equal(calculatedMap.get(), 5)
 
-	t.equal(cCount.get(), 2)
-
-	a.set('yarp2')
-
-	c()
-
-	t.equal(cCount.get(), 2, `Setting a shouldn't cause c to become dirty, because the last time c was ran, it didn't depend on a`)
-
-	t.end()
-})
-
-test(`Values are evaluated immediately when set`, t => {
-	const a = shiz(3)
-	const counter = countTimesCalled(() => 4)
-	a.set(counter)
-	t.equal(counter.get(), 1)
 	t.end()
 })

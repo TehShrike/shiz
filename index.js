@@ -1,24 +1,70 @@
 const nextTick = require('iso-next-tick')
 const makeEmitter = require('better-emitter')
 
-const { watchFunction, getFunctionsThatRelyOn } = require('./watch-function-dependencies.js')
+function value(value = null) {
+	const observable = makeLazyObservable(() => value)
 
-const makeFunction = value => typeof value === 'function' ? value : () => value
+	return addObservableHelpers(
+		inherit(observable, {
+			set(newValue) {
+				observable.set(() => newValue)
+			},
+		})
+	)
+}
 
-module.exports = function shiz(originalInput = null) {
-	let valueFn = makeFunction(originalInput)
+function computed(dependencies, transform) {
+	const observable = makeLazyObservable(calculate)
+
+	function calculate() {
+		const dependencyValues = dependencies.map(observable => observable.get())
+		return transform(dependencyValues)
+	}
+
+	function setDirty() {
+		observable.set(calculate)
+	}
+
+	dependencies.forEach(observable => {
+		observable.on('dirty', setDirty)
+	})
+
+	return addObservableHelpers(
+		inherit(observable, {
+			set() {
+				throw new Error(`Can't set a computed observable`)
+			},
+		})
+	)
+}
+
+module.exports = {
+	value,
+	computed,
+}
+
+function inherit(parent, child) {
+	return Object.assign(Object.create(parent), child)
+}
+
+function addObservableHelpers(observable) {
+	return inherit(observable, {
+		map(fn) {
+			return computed([ observable ], ([ value ]) => fn(value))
+		},
+	})
+}
+
+function makeLazyObservable(calculateFunction) {
+	let computedValue = calculateFunction()
+	let dirty = false
 	let needToEmitChange = true
-	let dirty = true
-	let calculatedValue
-	const representativeObject = { setDirty }
-	const emitter = makeEmitter()
-
-	const calculateValueFunction = watchFunction(() => valueFn(), representativeObject)
 
 	function setDirty() {
 		if (!dirty) {
 			dirty = true
-			getFunctionsThatRelyOn(representativeObject).forEach(({ setDirty }) => setDirty())
+
+			emitter.emit('dirty')
 
 			if (needToEmitChange) {
 				nextTick(() => emitter.emit('change'))
@@ -27,33 +73,20 @@ module.exports = function shiz(originalInput = null) {
 		}
 	}
 
-	function recalculateValue() {
-		calculatedValue = calculateValueFunction()
-		dirty = false
-	}
+	const emitter = makeEmitter({
+		get() {
+			if (dirty) {
+				computedValue = calculateFunction()
+				dirty = false
+			}
 
-	function getValue() {
-		if (dirty) {
-			recalculateValue()
-		} else {
-			calculateValueFunction.signalThatFunctionWasRunWithoutRecalculating()
-		}
-
-		return calculatedValue
-	}
-
-	emitter.on('change', () => {
-		needToEmitChange = true
+			return computedValue
+		},
+		set(newCalculateFunction) {
+			calculateFunction = newCalculateFunction
+			setDirty()
+		},
 	})
 
-	getValue.onChange = cb => emitter.on('change', cb)
-	getValue.set = newInput => {
-		valueFn = makeFunction(newInput)
-		setDirty()
-		recalculateValue()
-	}
-
-	getValue()
-
-	return getValue
+	return emitter
 }
