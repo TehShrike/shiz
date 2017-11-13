@@ -1,7 +1,7 @@
 {
   "name": "shiz",
   "version": "1.0.0",
-  "description": "Lazily-calculated observables made from functions",
+  "description": "Lazily calculated values",
   "main": "index.js",
   "scripts": {
     "test": "tape test.js && jsmd readme.md"
@@ -25,8 +25,7 @@
   "homepage": "https://github.com/TehShrike/shiz#readme",
   "dependencies": {
     "better-emitter": "1.0.2",
-    "iso-next-tick": "1.0.0",
-    "key-master": "3.1.0"
+    "iso-next-tick": "1.0.0"
   },
   "devDependencies": {
     "jsmd": "0.3.1",
