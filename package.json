@@ -1,6 +1,6 @@
 {
   "name": "shiz",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Lazily calculated values",
   "main": "index.js",
   "scripts": {
