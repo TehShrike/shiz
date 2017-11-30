@@ -1,5 +1,5 @@
-const test = require('tape')
-const { value, computed } = require('./')
+const test = require(`tape`)
+const { value, computed } = require(`./`)
 
 const countTimesCalled = fn => {
 	let count = 0
@@ -59,7 +59,7 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 	const counter = countTimesCalled(([ a, b ]) => a + b)
 	const c = computed([ a, b ], counter)
 
-	c.on('change', () => {
+	c.on(`change`, () => {
 		t.notOk(firstTick)
 
 		t.equal(c.get(), 3)
@@ -85,11 +85,11 @@ test(`Values initialize to null`, t => {
 })
 
 test(`Shouldn't emit more than one change event when there are multiple updates in a tick`, t => {
-	const a = value('yeah')
+	const a = value(`yeah`)
 
 	t.plan(1)
 
-	a.on('change', () => {
+	a.on(`change`, () => {
 		t.pass(`Callback called`)
 	})
 
@@ -109,4 +109,45 @@ test(`map`, t => {
 	t.equal(calculatedMap.get(), 5)
 
 	t.end()
+})
+
+test(`Emits change events every new tick when a value changes`, t => {
+	t.plan(2)
+
+	const observableValue = value(7)
+
+	observableValue.once(`change`, () => {
+		t.equal(observableValue.get(), 8)
+
+		observableValue.once(`change`, () => {
+			t.equal(observableValue.get(), 9)
+
+			t.end()
+		})
+
+		observableValue.set(9)
+	})
+
+	observableValue.set(8)
+})
+
+test(`Emits change events every new tick when a computed changes`, t => {
+	t.plan(2)
+
+	const initial = value(7)
+	const observableComputed = computed([ initial ], ([ n ]) => n * 2)
+
+	observableComputed.once(`change`, () => {
+		t.equal(observableComputed.get(), 16)
+
+		observableComputed.once(`change`, () => {
+			t.equal(observableComputed.get(), 18)
+
+			t.end()
+		})
+
+		initial.set(9)
+	})
+
+	initial.set(8)
 })

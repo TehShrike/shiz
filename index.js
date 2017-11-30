@@ -1,5 +1,7 @@
-const nextTick = require('iso-next-tick')
-const makeEmitter = require('better-emitter')
+const nextTick = require(`iso-next-tick`)
+const makeEmitter = require(`better-emitter`)
+
+const inherit = (parent, child) => Object.assign(Object.create(parent), child)
 
 function value(value = null) {
 	const observable = makeLazyObservable(() => value)
@@ -26,7 +28,7 @@ function computed(dependencies, transform) {
 	}
 
 	dependencies.forEach(observable => {
-		observable.on('dirty', setDirty)
+		observable.on(`dirty`, setDirty)
 	})
 
 	return addObservableHelpers(
@@ -41,10 +43,6 @@ function computed(dependencies, transform) {
 module.exports = {
 	value,
 	computed,
-}
-
-function inherit(parent, child) {
-	return Object.assign(Object.create(parent), child)
 }
 
 function addObservableHelpers(observable) {
@@ -64,11 +62,15 @@ function makeLazyObservable(calculateFunction) {
 		if (!dirty) {
 			dirty = true
 
-			emitter.emit('dirty')
+			emitter.emit(`dirty`)
 
 			if (needToEmitChange) {
-				nextTick(() => emitter.emit('change'))
 				needToEmitChange = false
+
+				nextTick(() => {
+					needToEmitChange = true
+					emitter.emit(`change`)
+				})
 			}
 		}
 	}
