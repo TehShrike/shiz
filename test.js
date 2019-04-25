@@ -151,3 +151,61 @@ test(`Emits change events every new tick when a computed changes`, t => {
 
 	initial.set(8)
 })
+
+test(`subscribe method fires right away`, t => {
+	const someValue = value(2)
+	t.timeoutAfter(100)
+
+	const unsubscribe = someValue.subscribe(number => {
+		t.equal(number, 2)
+
+		unsubscribe()
+		t.end()
+	})
+})
+
+test(`subscribe method fires when a value is changed`, t => {
+	const someValue = value(2)
+	t.timeoutAfter(100)
+
+	let calls = 0
+
+	const unsubscribe = someValue.subscribe(number => {
+		calls++
+
+		if (calls === 1) {
+			t.equal(number, 2)
+		} else {
+			t.equal(calls, 2)
+			t.equal(number, 3)
+
+			unsubscribe()
+			t.end()
+		}
+	})
+
+	someValue.set(3)
+})
+
+test(`subscribe returns a working unsubscribe function`, t => {
+	const someValue = value(2)
+	t.timeoutAfter(100)
+
+	let calls = 0
+
+	const unsubscribe = someValue.subscribe(number => {
+		calls++
+
+		if (calls === 1) {
+			t.equal(number, 2)
+		} else {
+			t.fail(`There shouldn't be more than one call`)
+		}
+	})
+
+	unsubscribe()
+
+	someValue.set(3)
+
+	t.end()
+})

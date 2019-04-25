@@ -50,6 +50,14 @@ function addObservableHelpers(observable) {
 		map(fn) {
 			return computed([ observable ], ([ value ]) => fn(value))
 		},
+		subscribe(fn) {
+			const unsubscribe = observable.on(`change`, () => fn(observable.get()))
+
+			const initialValue = observable.get()
+			nextTick(() => fn(initialValue))
+
+			return unsubscribe
+		},
 	})
 }
 
