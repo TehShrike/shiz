@@ -16,8 +16,8 @@ test(`Some basic case`, t => {
 	const a = value(1)
 	const b = value(2)
 	const c = value(3)
-	const d = computed([ a, b ], ([ a, b ]) => a * b)
-	const e = computed([ d, c ], ([ d, c ]) => d + c)
+	const d = computed({ a, b }, ({ a, b }) => a * b)
+	const e = computed({ d, c }, ({ d, c }) => d + c)
 
 	t.equal(e.get(), 5)
 	a.set(2)
@@ -29,10 +29,10 @@ test(`Some basic case`, t => {
 test(`Doesn't calculate values more than once`, t => {
 	const a = value(3)
 	const b = value(5)
-	const cCounter = countTimesCalled(([ a, b ]) => a + b)
-	const c = computed([ a, b ], cCounter)
-	const d = computed([ c ], ([ c ]) => c)
-	const e = computed([ c ], ([ c ]) => c + 1)
+	const cCounter = countTimesCalled(({ a, b }) => a + b)
+	const c = computed({ a, b }, cCounter)
+	const d = computed({ c }, ({ c }) => c)
+	const e = computed({ c }, ({ c }) => c + 1)
 
 	t.equal(d.get(), 8)
 	t.equal(e.get(), 9)
@@ -56,8 +56,8 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 	const a = value(3)
 	const b = value(5)
 
-	const counter = countTimesCalled(([ a, b ]) => a + b)
-	const c = computed([ a, b ], counter)
+	const counter = countTimesCalled(({ a, b }) => a + b)
+	const c = computed({ a, b }, counter)
 
 	c.on(`change`, () => {
 		t.notOk(firstTick)
@@ -100,7 +100,7 @@ test(`Shouldn't emit more than one change event when there are multiple updates 
 
 test(`map`, t => {
 	const initial = value(7)
-	const calculated = computed([ initial ], ([ initial ]) => initial + 3)
+	const calculated = computed({ initial }, ({ initial }) => initial + 3)
 
 	const initialMap = initial.map(initial => initial * 2)
 	const calculatedMap = calculated.map(calculated => calculated - 5)
@@ -135,7 +135,7 @@ test(`Emits change events every new tick when a computed changes`, t => {
 	t.plan(2)
 
 	const initial = value(7)
-	const observableComputed = computed([ initial ], ([ n ]) => n * 2)
+	const observableComputed = computed({ n: initial }, ({ n }) => n * 2)
 
 	observableComputed.once(`change`, () => {
 		t.equal(observableComputed.get(), 16)
