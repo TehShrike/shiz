@@ -83,7 +83,7 @@ const doubled = computed({ a }, computeFunction)
 An object with these properties:
 
 - `observableish.get()`: a function that returns the current value, recalculating it if necessary
-- `observableish.map(fn)`: sugar for `computed([ observableish ], ([ value ]) => fn(value))`
+- `observableish.map(fn)`: sugar for `computed({ observableish }, ({ observableish: value }) => fn(value))`
 - `unsubscribe = observableish.subscribe(callback)`: Calls the callback function whenever the observable value changes.  Also calls the callback function with the current value right away when subscribe is called.
 
 It is also a [`better-emitter`](https://github.com/TehShrike/better-emitter) emitter that emits these events:
