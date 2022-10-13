@@ -24,8 +24,8 @@ const itsAValue = value(5)
 const anotherValue = value(3)
 
 const dependentValue = computed(
-	[ itsAValue, anotherValue ],
-	([ itsAValue, anotherValue ]) => itsAValue + anotherValue
+	{ itsAValue, anotherValue },
+	({ itsAValue, anotherValue }) => itsAValue + anotherValue
 )
 
 dependentValue.get() // => 8
@@ -65,17 +65,17 @@ Takes any value and returns an [`observableish`](#observableish) object with a `
 
 ### `observableish = computed(dependencies, computeFunction)`
 
-Takes two arguments: an array of [`observableish`](#observableish) dependencies, and a function that takes an array of values calculated from those dependencies.
+Takes two arguments: an object of [`observableish`](#observableish) dependencies, and a function that takes an object of values calculated from those dependencies.
 
 Even if a bunch of upstream dependencies change, the `computeFunction` won't be called until something calls the `get` method.
 
 ```js
 
 const a = value(1)
-function computeFunction([ a ]) {
+function computeFunction({ a }) {
 	return a * 2
 }
-const doubled = computed([ a ], computeFunction)
+const doubled = computed({ a }, computeFunction)
 ```
 
 ### `observableish`
@@ -83,12 +83,12 @@ const doubled = computed([ a ], computeFunction)
 An object with these properties:
 
 - `observableish.get()`: a function that returns the current value, recalculating it if necessary
-- `observableish.map(fn)`: sugar for `computed([ observableish ], ([ value ]) => fn(value))`
+- `observableish.map(fn)`: sugar for `computed({ observableish }, ({ observableish: value }) => fn(value))`
 - `unsubscribe = observableish.subscribe(callback)`: Calls the callback function whenever the observable value changes.  Also calls the callback function with the current value right away when subscribe is called.
 
 It is also a [`better-emitter`](https://github.com/TehShrike/better-emitter) emitter that emits these events:
 
-- `change`: this is the event you should subscribe to.  It will fire on the tick after any changes happen, allowing you to recalculate values lazily.
+- `change`: this is the event you should subscribe to.  It will fire in a microtask after any changes happen, allowing you to recalculate values lazily.
 - `dirty`: this fires *every* time an upstream value changes.  Don't call `get` every time this event fires, or else you'll cause a lot of extra recalculation.
 
 ## License

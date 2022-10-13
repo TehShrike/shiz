@@ -1,4 +1,3 @@
-const nextTick = require(`iso-next-tick`)
 const makeEmitter = require(`better-emitter`)
 
 const inherit = (parent, child) => Object.assign(Object.create(parent), child)
@@ -11,7 +10,7 @@ function value(value = null) {
 			set(newValue) {
 				observable.set(() => newValue)
 			},
-		})
+		}),
 	)
 }
 
@@ -19,7 +18,7 @@ function computed(dependencies, transform) {
 	const observable = makeLazyObservable(calculate)
 
 	function calculate() {
-		const dependencyValues = dependencies.map(observable => observable.get())
+		const dependencyValues = Object.fromEntries(Object.entries(dependencies).map(([ key, observable ]) => [ key, observable.get() ]))
 		return transform(dependencyValues)
 	}
 
@@ -27,7 +26,7 @@ function computed(dependencies, transform) {
 		observable.set(calculate)
 	}
 
-	dependencies.forEach(observable => {
+	Object.values(dependencies).forEach(observable => {
 		observable.on(`dirty`, setDirty)
 	})
 
@@ -36,7 +35,7 @@ function computed(dependencies, transform) {
 			set() {
 				throw new Error(`Can't set a computed observable`)
 			},
-		})
+		}),
 	)
 }
 
@@ -48,13 +47,13 @@ module.exports = {
 function addObservableHelpers(observable) {
 	return inherit(observable, {
 		map(fn) {
-			return computed([ observable ], ([ value ]) => fn(value))
+			return computed({ observable }, ({ observable: value }) => fn(value))
 		},
 		subscribe(fn) {
 			const unsubscribe = observable.on(`change`, () => fn(observable.get()))
 
 			const initialValue = observable.get()
-			nextTick(() => fn(initialValue))
+			queueMicrotask(() => fn(initialValue))
 
 			return unsubscribe
 		},
@@ -75,7 +74,7 @@ function makeLazyObservable(calculateFunction) {
 			if (needToEmitChange) {
 				needToEmitChange = false
 
-				nextTick(() => {
+				queueMicrotask(() => {
 					needToEmitChange = true
 					emitter.emit(`change`)
 				})

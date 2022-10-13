@@ -24,11 +24,10 @@
   },
   "homepage": "https://github.com/TehShrike/shiz#readme",
   "dependencies": {
-    "better-emitter": "1.0.2",
-    "iso-next-tick": "1.0.0"
+    "better-emitter": "^3.0.0"
   },
   "devDependencies": {
-    "jsmd": "0.3.2",
+    "jsmd": "^1.1.0",
     "tape": "4.8.0"
   }
 }
