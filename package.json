@@ -4,6 +4,10 @@
   "description": "Lazily calculated values",
   "type": "module",
   "exports": "./index.js",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
   "scripts": {
     "test": "tsc --noEmit && node --test test.ts"
   },
