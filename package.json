@@ -1,10 +1,14 @@
 {
   "name": "shiz",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Lazily calculated values",
-  "main": "index.js",
+  "type": "module",
+  "exports": "./index.js",
   "scripts": {
-    "test": "tape test.js && jsmd readme.md"
+    "test": "node --test test.js"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "repository": {
     "type": "git",
@@ -24,10 +28,6 @@
   },
   "homepage": "https://github.com/TehShrike/shiz#readme",
   "dependencies": {
-    "better-emitter": "^3.0.0"
-  },
-  "devDependencies": {
-    "jsmd": "^1.1.0",
-    "tape": "4.8.0"
+    "better-emitter": "^4.0.1"
   }
 }

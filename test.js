@@ -1,5 +1,6 @@
-const test = require(`tape`)
-const { value, computed } = require(`./`)
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { value, computed } from './index.js'
 
 const countTimesCalled = fn => {
 	let count = 0
@@ -12,21 +13,19 @@ const countTimesCalled = fn => {
 	return wrapper
 }
 
-test(`Some basic case`, t => {
+test(`Some basic case`, () => {
 	const a = value(1)
 	const b = value(2)
 	const c = value(3)
 	const d = computed({ a, b }, ({ a, b }) => a * b)
 	const e = computed({ d, c }, ({ d, c }) => d + c)
 
-	t.equal(e.get(), 5)
+	assert.equal(e.get(), 5)
 	a.set(2)
-	t.equal(e.get(), 7)
-
-	t.end()
+	assert.equal(e.get(), 7)
 })
 
-test(`Doesn't calculate values more than once`, t => {
+test(`Doesn't calculate values more than once`, () => {
 	const a = value(3)
 	const b = value(5)
 	const cCounter = countTimesCalled(({ a, b }) => a + b)
@@ -34,23 +33,21 @@ test(`Doesn't calculate values more than once`, t => {
 	const d = computed({ c }, ({ c }) => c)
 	const e = computed({ c }, ({ c }) => c + 1)
 
-	t.equal(d.get(), 8)
-	t.equal(e.get(), 9)
+	assert.equal(d.get(), 8)
+	assert.equal(e.get(), 9)
 
-	t.equal(cCounter.get(), 1)
+	assert.equal(cCounter.get(), 1)
 
 	a.set(4)
 	b.set(6)
 
-	t.equal(d.get(), 10)
-	t.equal(e.get(), 11)
+	assert.equal(d.get(), 10)
+	assert.equal(e.get(), 11)
 
-	t.equal(cCounter.get(), 2)
-
-	t.end()
+	assert.equal(cCounter.get(), 2)
 })
 
-test(`Fires an event once after a bunch of upstream stuff changes`, t => {
+test(`Fires an event once after a bunch of upstream stuff changes`, (t, done) => {
 	let firstTick = true
 
 	const a = value(3)
@@ -60,15 +57,15 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 	const c = computed({ a, b }, counter)
 
 	c.on(`change`, () => {
-		t.notOk(firstTick)
+		assert.equal(firstTick, false)
 
-		t.equal(c.get(), 3)
-		t.equal(counter.get(), 2)
+		assert.equal(c.get(), 3)
+		assert.equal(counter.get(), 2)
 
-		t.end()
+		done()
 	})
 
-	t.equal(counter.get(), 1)
+	assert.equal(counter.get(), 1)
 
 	a.set(1)
 	b.set(2)
@@ -76,21 +73,21 @@ test(`Fires an event once after a bunch of upstream stuff changes`, t => {
 	firstTick = false
 })
 
-test(`Values initialize to null`, t => {
+test(`Values initialize to null`, () => {
 	const a = value()
 
-	t.equal(a.get(), null)
-
-	t.end()
+	assert.equal(a.get(), null)
 })
 
-test(`Shouldn't emit more than one change event when there are multiple updates in a tick`, t => {
+test(`Shouldn't emit more than one change event when there are multiple updates in a tick`, (t, done) => {
 	const a = value(`yeah`)
 
-	t.plan(1)
+	let callCount = 0
 
 	a.on(`change`, () => {
-		t.pass(`Callback called`)
+		callCount++
+		assert.equal(callCount, 1, `Callback should only be called once`)
+		done()
 	})
 
 	a.set(1)
@@ -98,31 +95,27 @@ test(`Shouldn't emit more than one change event when there are multiple updates 
 	a.set(2)
 })
 
-test(`map`, t => {
+test(`map`, () => {
 	const initial = value(7)
 	const calculated = computed({ initial }, ({ initial }) => initial + 3)
 
 	const initialMap = initial.map(initial => initial * 2)
 	const calculatedMap = calculated.map(calculated => calculated - 5)
 
-	t.equal(initialMap.get(), 14)
-	t.equal(calculatedMap.get(), 5)
-
-	t.end()
+	assert.equal(initialMap.get(), 14)
+	assert.equal(calculatedMap.get(), 5)
 })
 
-test(`Emits change events every new tick when a value changes`, t => {
-	t.plan(2)
-
+test(`Emits change events every new tick when a value changes`, (t, done) => {
 	const observableValue = value(7)
 
 	observableValue.once(`change`, () => {
-		t.equal(observableValue.get(), 8)
+		assert.equal(observableValue.get(), 8)
 
 		observableValue.once(`change`, () => {
-			t.equal(observableValue.get(), 9)
+			assert.equal(observableValue.get(), 9)
 
-			t.end()
+			done()
 		})
 
 		observableValue.set(9)
@@ -131,19 +124,17 @@ test(`Emits change events every new tick when a value changes`, t => {
 	observableValue.set(8)
 })
 
-test(`Emits change events every new tick when a computed changes`, t => {
-	t.plan(2)
-
+test(`Emits change events every new tick when a computed changes`, (t, done) => {
 	const initial = value(7)
 	const observableComputed = computed({ n: initial }, ({ n }) => n * 2)
 
 	observableComputed.once(`change`, () => {
-		t.equal(observableComputed.get(), 16)
+		assert.equal(observableComputed.get(), 16)
 
 		observableComputed.once(`change`, () => {
-			t.equal(observableComputed.get(), 18)
+			assert.equal(observableComputed.get(), 18)
 
-			t.end()
+			done()
 		})
 
 		initial.set(9)
@@ -152,21 +143,19 @@ test(`Emits change events every new tick when a computed changes`, t => {
 	initial.set(8)
 })
 
-test(`subscribe method fires right away`, t => {
+test(`subscribe method fires right away`, (t, done) => {
 	const someValue = value(2)
-	t.timeoutAfter(100)
 
 	const unsubscribe = someValue.subscribe(number => {
-		t.equal(number, 2)
+		assert.equal(number, 2)
 
 		unsubscribe()
-		t.end()
+		done()
 	})
 })
 
-test(`subscribe method fires when a value is changed`, t => {
+test(`subscribe method fires when a value is changed`, (t, done) => {
 	const someValue = value(2)
-	t.timeoutAfter(100)
 
 	let calls = 0
 
@@ -174,22 +163,21 @@ test(`subscribe method fires when a value is changed`, t => {
 		calls++
 
 		if (calls === 1) {
-			t.equal(number, 2)
+			assert.equal(number, 2)
 		} else {
-			t.equal(calls, 2)
-			t.equal(number, 3)
+			assert.equal(calls, 2)
+			assert.equal(number, 3)
 
 			unsubscribe()
-			t.end()
+			done()
 		}
 	})
 
 	someValue.set(3)
 })
 
-test(`subscribe returns a working unsubscribe function`, t => {
+test(`subscribe returns a working unsubscribe function`, (t, done) => {
 	const someValue = value(2)
-	t.timeoutAfter(100)
 
 	let calls = 0
 
@@ -197,9 +185,9 @@ test(`subscribe returns a working unsubscribe function`, t => {
 		calls++
 
 		if (calls === 1) {
-			t.equal(number, 2)
+			assert.equal(number, 2)
 		} else {
-			t.fail(`There shouldn't be more than one call`)
+			assert.fail(`There shouldn't be more than one call`)
 		}
 	})
 
@@ -207,5 +195,6 @@ test(`subscribe returns a working unsubscribe function`, t => {
 
 	someValue.set(3)
 
-	t.end()
+	// Give time for any erroneous callbacks to fire
+	queueMicrotask(() => done())
 })

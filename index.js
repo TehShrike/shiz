@@ -1,4 +1,4 @@
-const makeEmitter = require(`better-emitter`)
+import makeEmitter from 'better-emitter'
 
 const inherit = (parent, child) => Object.assign(Object.create(parent), child)
 
@@ -39,7 +39,7 @@ function computed(dependencies, transform) {
 	)
 }
 
-module.exports = {
+export {
 	value,
 	computed,
 }
