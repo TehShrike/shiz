@@ -143,15 +143,18 @@ test(`Emits change events every new tick when a computed changes`, (t, done) => 
 	initial.set(8)
 })
 
-test(`subscribe method fires right away`, (t, done) => {
+test(`subscribe method fires synchronously`, (t, done) => {
 	const someValue = value(2)
+	let subscribeFunctionDone = false
 
 	const unsubscribe = someValue.subscribe(number => {
 		assert.equal(number, 2)
+		assert.equal(subscribeFunctionDone, false)
 
-		unsubscribe()
+		queueMicrotask(() => unsubscribe())
 		done()
 	})
+	subscribeFunctionDone = true
 })
 
 test(`subscribe method fires when a value is changed`, (t, done) => {

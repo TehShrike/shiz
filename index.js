@@ -53,7 +53,7 @@ function addObservableHelpers(observable) {
 			const unsubscribe = observable.on(`change`, () => fn(observable.get()))
 
 			const initialValue = observable.get()
-			queueMicrotask(() => fn(initialValue))
+			fn(initialValue)
 
 			return unsubscribe
 		},

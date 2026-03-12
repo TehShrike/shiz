@@ -8,17 +8,13 @@ Originally inspired by observables-as-functions libraries like [w0w](https://git
 
 Functions are only re-run when someone asks for the value, as opposed to when a dependency's value changes.
 
-shiz can be used as a [Svelte store](https://svelte.dev/docs#4_Prefix_stores_with_$_to_access_their_values).
+shiz can be used as a [Svelte store](https://svelte.dev/docs/svelte/stores#Store-contract), though subscribe callbacks will technically not be called synchronously on future changes.
 
 ## Observable example
 
-<!--js
-const shiz = require('./')
--->
+```ts
 
-```js
-
-const { value, computed } = shiz
+import { value, computed } from 'shiz'
 
 const itsAValue = value(5)
 const anotherValue = value(3)
@@ -43,7 +39,7 @@ Like, say, if you're watching the viewport position of hundreds of elements whil
 
 To listen for changes:
 
-```js
+```ts
 const someValue = value(4)
 
 someValue.set(3)
@@ -69,7 +65,7 @@ Takes two arguments: an object of [`observableish`](#observableish) dependencies
 
 Even if a bunch of upstream dependencies change, the `computeFunction` won't be called until something calls the `get` method.
 
-```js
+```ts
 
 const a = value(1)
 function computeFunction({ a }) {
@@ -84,7 +80,7 @@ An object with these properties:
 
 - `observableish.get()`: a function that returns the current value, recalculating it if necessary
 - `observableish.map(fn)`: sugar for `computed({ observableish }, ({ observableish: value }) => fn(value))`
-- `unsubscribe = observableish.subscribe(callback)`: Calls the callback function whenever the observable value changes.  Also calls the callback function with the current value right away when subscribe is called.
+- `unsubscribe = observableish.subscribe(callback)`: Calls the callback function whenever the observable value changes.  Also calls the callback function synchronously when subscribe is called.
 
 It is also a [`better-emitter`](https://github.com/TehShrike/better-emitter) emitter that emits these events:
 
