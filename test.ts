@@ -2,9 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { value, computed } from './index.js'
 
-const countTimesCalled = fn => {
+const countTimesCalled = <T extends (...args: any[]) => any>(fn: T) => {
 	let count = 0
-	const wrapper = (...args) => {
+	const wrapper = (...args: Parameters<T>): ReturnType<T> => {
 		count++
 		return fn(...args)
 	}
@@ -80,7 +80,7 @@ test(`Values initialize to null`, () => {
 })
 
 test(`Shouldn't emit more than one change event when there are multiple updates in a tick`, (t, done) => {
-	const a = value(`yeah`)
+	const a = value(0)
 
 	let callCount = 0
 

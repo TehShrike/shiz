@@ -5,7 +5,7 @@
   "type": "module",
   "exports": "./index.js",
   "scripts": {
-    "test": "node --test test.js"
+    "test": "tsc --noEmit && node --test test.ts"
   },
   "engines": {
     "node": ">=24"
@@ -29,5 +29,9 @@
   "homepage": "https://github.com/TehShrike/shiz#readme",
   "dependencies": {
     "better-emitter": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
   }
 }
