@@ -1,6 +1,6 @@
 {
   "name": "shiz",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Lazily calculated values",
   "type": "module",
   "exports": "./index.js",
