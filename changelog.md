@@ -1,5 +1,6 @@
-# 4.0.0
+# 5.0.0
 
+- Accidentally skipped over 4.0.0, whoops
 - converted from CommonJS to ESM
 - added type definition
 - in order to get closer to the Svelte store contract, `subscribe` callbacks are called synchronously when `subscribe` is first called
